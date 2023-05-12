@@ -26,8 +26,9 @@ class IndexClient:
 
     """
 
-    def __init__(self,
+    def __init__(self,                 
                  indexes: IndexList = None,
+                 index_url: str = None,
                  verbose: bool = False) -> None:
         """Initializes the class instance.
 
@@ -42,6 +43,9 @@ class IndexClient:
         """
         if verbose:
             logging.basicConfig(level=logging.DEBUG)
+
+        if index_url:
+            self.index_url = index_url
 
         if indexes:
             self.indexes = indexes
@@ -62,7 +66,7 @@ class IndexClient:
                 multi-threading only if set.
 
         """
-        self.results = search_multiple_indexes(url, self.indexes, threads)
+        self.results = search_multiple_indexes(url, self.indexes, self.index_url, threads)
 
     def download(self, threads: int = None) -> None:
         """Download.

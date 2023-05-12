@@ -10,11 +10,11 @@ import requests
 from ..types import ResultList, IndexList
 from .multithreading import make_multithreaded
 
-URL_TEMPLATE = ("https://index.commoncrawl.org/"
-                "CC-MAIN-{index}-index?url={url}&output=json")
+INDEX_URL = "https://index.commoncrawl.org/"
+URL_TEMPLATE = ("{index_url}CC-MAIN-{index}-index?url={url}&output=json")
 
 
-def search_single_index(index: str, url: str) -> ResultList:
+def search_single_index(index: str, url: str, index_url: str) -> ResultList:
     """Searches specific Common Crawl Index for given URL pattern.
 
     Args:
@@ -27,7 +27,7 @@ def search_single_index(index: str, url: str) -> ResultList:
     """
     results: ResultList = []
 
-    url = URL_TEMPLATE.format(index=index, url=url)
+    url = URL_TEMPLATE.format(index_url=index_url, index=index, url=url)
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -40,6 +40,7 @@ def search_single_index(index: str, url: str) -> ResultList:
 
 def search_multiple_indexes(url: str,
                             indexes: IndexList,
+                            index_url: str = INDEX_URL,
                             threads: int = None) -> ResultList:
     """Searches multiple Common Crawl Indexes for URL pattern.
 
@@ -65,7 +66,7 @@ def search_multiple_indexes(url: str,
     # single-threaded search
     else:
         for index in indexes:
-            index_results = search_single_index(index, url)
+            index_results = search_single_index(index_url, index, url)
             results.extend(index_results)
 
     return results
