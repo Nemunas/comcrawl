@@ -13,6 +13,7 @@ from .multithreading import make_multithreaded
 
 
 URL_TEMPLATE = "https://data.commoncrawl.org/{filename}"
+MAX_RETRIES = 3
 
 
 def download_single_result(result: Result) -> Result:
@@ -30,11 +31,27 @@ def download_single_result(result: Result) -> Result:
     offset_end = offset + length - 1
 
     url = URL_TEMPLATE.format(filename=result["filename"])
-    response = (requests
-                .get(
-                    url,
-                    headers={"Range": f"bytes={offset}-{offset_end}"}
-                ))
+    tries = 0
+    while tries < MAX_RETRIES:
+        try:
+            response = (requests
+                        .get(
+                            url,
+                            headers={"Range": f"bytes={offset}-{offset_end}"},
+                            timeout=30
+                        ))
+            break
+        except (requests.exceptions.Timeout, requests.exceptions.RequestException) as e:
+            tries += 1
+            if tries <= MAX_RETRIES:
+                print('An error occurred:', e, 'while trying to download', url)
+                print('Retrying...')
+            else:
+                print('An error occurred:', e, 'while trying to download', url)                
+                print('Max retries reached, skipping.')
+                result["html"] = ""
+                return result
+
 
     zipped_file = io.BytesIO(response.content)
     unzipped_file = gzip.GzipFile(fileobj=zipped_file)

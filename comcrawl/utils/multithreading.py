@@ -57,6 +57,7 @@ def make_multithreaded(func: Callable, threads: int) -> Callable:
                         results.append(result)
 
                     pbar.update(1)
+            pbar.update(total_items)
 
         return results
 
