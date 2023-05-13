@@ -7,10 +7,9 @@ to manage multi-threading.
 
 from typing import Callable, List
 from concurrent import futures
+from tqdm import tqdm
 
-
-def make_multithreaded(func: Callable,
-                       threads: int) -> Callable:
+def make_multithreaded(func: Callable, threads: int) -> Callable:
     """Creates a multithreaded version of a function.
 
     Args:
@@ -40,23 +39,24 @@ def make_multithreaded(func: Callable,
 
         """
         results = []
+        total_items = len(input_list)
 
-        with futures.ThreadPoolExecutor(max_workers=threads) as executor:
-            future_to_input_item = {
-                executor.submit(
-                    func,
-                    input_item,
-                    *args
-                ): input_item for input_item in input_list
-            }
+        with tqdm(total=total_items) as pbar:
+            with futures.ThreadPoolExecutor(max_workers=threads) as executor:
+                future_to_input_item = {
+                    executor.submit(func, input_item, *args): input_item
+                    for input_item in input_list
+                }
 
-            for future in futures.as_completed(future_to_input_item):
-                result = future.result()
+                for future in futures.as_completed(future_to_input_item):
+                    result = future.result()
 
-                if isinstance(result, List):
-                    results.extend(result)
-                else:
-                    results.append(result)
+                    if isinstance(result, List):
+                        results.extend(result)
+                    else:
+                        results.append(result)
+
+                    pbar.update(1)
 
         return results
 
