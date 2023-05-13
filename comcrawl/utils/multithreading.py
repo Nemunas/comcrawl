@@ -9,7 +9,7 @@ from typing import Callable, List
 from concurrent import futures
 from tqdm import tqdm
 
-def make_multithreaded(func: Callable, threads: int) -> Callable:
+def make_multithreaded(func: Callable, threads: int, index_url: str = None) -> Callable:
     """Creates a multithreaded version of a function.
 
     Args:

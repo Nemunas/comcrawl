@@ -7,6 +7,7 @@ searching through Common Crawl Indexes.
 
 import json
 import requests
+import tqdm
 from ..types import ResultList, IndexList
 from .multithreading import make_multithreaded
 
@@ -27,7 +28,7 @@ def search_single_index(index: str, url: str, index_url: str) -> ResultList:
     """
     results: ResultList = []
 
-    url = URL_TEMPLATE.format(index_url=index_url, index=index, url=url)
+    url = URL_TEMPLATE.format(index=index, url=url, index_url=index_url)
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -61,12 +62,12 @@ def search_multiple_indexes(url: str,
     if threads:
         mulithreaded_search = make_multithreaded(search_single_index,
                                                  threads)
-        results = mulithreaded_search(indexes, url)
+        results = mulithreaded_search(indexes, url, index_url)
 
     # single-threaded search
     else:
-        for index in indexes:
-            index_results = search_single_index(index_url, index, url)
+        for index in tqdm.tqdm(indexes):
+            index_results = search_single_index(index=index, url=url, index_url=index_url)
             results.extend(index_results)
 
     return results

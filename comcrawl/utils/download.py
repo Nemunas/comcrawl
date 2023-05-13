@@ -8,6 +8,7 @@ pages from the Common Crawl S3 Buckets.
 import io
 import gzip
 import requests
+import tqdm
 from ..types import Result, ResultList
 from .multithreading import make_multithreaded
 
@@ -99,7 +100,7 @@ def download_multiple_results(results: ResultList,
 
     # single-threaded download
     else:
-        for result in results:
+        for result in tqdm.tqdm(results):
             result_with_html = download_single_result(result)
             results_with_html.append(result_with_html)
 
