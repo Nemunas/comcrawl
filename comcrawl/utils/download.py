@@ -50,17 +50,16 @@ def download_single_result(result: Result) -> Result:
             else:
                 print('An error occurred:', e, 'while trying to download', url)                
                 print('Max retries reached, skipping.')
-                result["html"] = ""
                 return result
+            
+    result["html"] = ""
 
     try:
         zipped_file = io.BytesIO(response.content)
         unzipped_file = gzip.GzipFile(fileobj=zipped_file)
 
         raw_data: bytes = unzipped_file.read()        
-        data: str = raw_data.decode("utf-8")
-
-        result["html"] = ""
+        data: str = raw_data.decode("utf-8")        
 
         if len(data) > 0:
             data_parts = data.strip().split("\r\n\r\n", 2)
